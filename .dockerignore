@@ -1,5 +1,7 @@
 *__pycache__
 /venv
+/tests
 tasks.db
 .vscode
 *.pytest_cache
+.gitignore

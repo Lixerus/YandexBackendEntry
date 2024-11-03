@@ -3,11 +3,9 @@ from pydantic import (
     ConfigDict,
     ValidationInfo,
     Field, 
-    field_validator,
     model_validator,
     AfterValidator,
 )
-
 from typing import Annotated, Optional, Self
 from datetime import datetime
 from enum import Enum
@@ -22,7 +20,7 @@ class DiskItemImportSchema(BaseModel):
     url : Annotated[Optional[str], Field(min_length=0, max_length=255, default=None)]
     parentId : Optional[str]
     item_type : Annotated[SysItemType, Field(alias='type')]
-    size : Annotated[Optional[int], Field(ge=0, default=None)]
+    size : Annotated[Optional[int], Field(ge=0, default=0)]
 
     @model_validator(mode='after')
     def foldertype_validator(self) -> Self:
@@ -31,30 +29,33 @@ class DiskItemImportSchema(BaseModel):
                 raise ValueError(f"url not null in folder with id {self.id}")
             if self.size != None:
                 raise ValueError(f"size not null in folder with id {self.id}")
+            # set 0 to size if no ValueError raised on FOLDER type
+            self.size = 0
+        else:
+            if self.url == None:
+                raise ValueError(f"url null in file with id {self.id}")
+            if self.size == None or self.size <= 0:
+                raise ValueError(f"size null or le 0 with file id {self.id}")
         return self
 
-    # @field_validator('date', mode='before')
-    # @classmethod
-    # def add_datetime(cls, unvalidated_data : Any, info : ValidationInfo) -> Any:
-    #     try:
-    #         print(unvalidated_data, type(unvalidated_data), "IN validator")
-    #         safe_date = info.context.get('updateDate')
-    #     except KeyError as e:
-    #         raise ValidationError("No timedate key")
-    #     unvalidated_data['date'] = safe_date
-    #     return unvalidated_data
-    
+def set_children_to_none(value: list['DiskItemRetreweSchema'], info : ValidationInfo) -> list[DiskItemImportSchema] | None:
+    if len(value) == 0:
+        return None
+    return value
 
 class DiskItemRetreweSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     id : str
     url : Optional[str]
     date : datetime
     parentId : Optional[str]
-    type : SysItemType
-    size : Optional[str]
-    children : list['DiskItemRetreweSchema']
+    item_type : Annotated[SysItemType,  Field(alias='type')]
+    size : Optional[int]
+    children : Annotated[
+        Optional[list['DiskItemRetreweSchema']], AfterValidator(set_children_to_none), Field(examples=[None])]
+
+
 
 
 def validate_nonrepeat_id(value: list[DiskItemImportSchema], info : ValidationInfo) -> list[DiskItemImportSchema]:
@@ -68,10 +69,23 @@ def validate_parent_folder(value: list[DiskItemImportSchema], info : ValidationI
     for item in value:
         if item.parentId == item.id:
             raise AssertionError(f"Cannot be parent of yourself")
-        if item.parentId != None and type_dict[item.parentId] != SysItemType.FOLDER:
+        if item.parentId != None and type_dict.get(item.parentId, SysItemType.FOLDER)!= SysItemType.FOLDER:
             raise AssertionError(f"Parent of item with id {item.id} cannot be type ""FILE""")
     return value
 
 class DiskItemsDTO(BaseModel):
     items : Annotated[list[DiskItemImportSchema], AfterValidator(validate_nonrepeat_id), AfterValidator(validate_parent_folder)]
     updateDate : datetime
+
+class DiskItemHistorySchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id : str
+    url : Optional[str]
+    date : datetime
+    parentId : Optional[str]
+    item_type : Annotated[SysItemType,  Field(alias='type')]
+    size : Optional[int]
+
+class HistoryResponse(BaseModel):
+    items: list[DiskItemHistorySchema] | None
