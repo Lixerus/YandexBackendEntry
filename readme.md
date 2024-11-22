@@ -12,7 +12,7 @@ Service inserts and updates self-referential tree structured data. It can also d
 
 # Project setup
 
-1. Clone the repositary with command `git clone ...`
+1. Clone the repositary with command `git clone https://github.com/Lixerus/YandexBackendEntry.git`
 2. Run 2 following commands in cmd in root folder:
     1. `docker build . -t yadisk`
     2. `docker create --name yadisk -p 80:80 --restart=always yadisk`
@@ -24,4 +24,4 @@ Service inserts and updates self-referential tree structured data. It can also d
 
 ## Example
 Scenario with adding, updating, retreving, history and deletion.
-[scenario](YaDisk_basic_scenario.gif)
+![scenario](YaDisk_basic_scenario.gif)
