@@ -1,7 +1,7 @@
 import pytest
 from src.disk.schemas import DiskItemImportSchema, DiskItemsDTO
 from contextlib import nullcontext
-from datetime import datetime
+from datetime import datetime,timezone
 from pydantic import ValidationError
 
 
@@ -74,7 +74,7 @@ class TestImportSchema:
 
     @pytest.mark.parametrize(
         'timedate,expectation', [
-            (datetime(2024,11,1,12,3,4), nullcontext()),
+            (datetime(2024,11,1,12,3,4,tzinfo=timezone.utc), nullcontext()),
             ("2022-05-28T21:12:01.000Z",nullcontext()),
             ("2022-13-28T21:12:01.000Z", pytest.raises(ValidationError)),
             ("2022-13-28", pytest.raises(ValidationError))

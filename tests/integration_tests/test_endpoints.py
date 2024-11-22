@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from copy import copy
-from datetime import datetime 
+from datetime import datetime, timezone 
 
 @pytest.mark.usefixtures('load_test_data')
 class TestImport:
@@ -29,7 +29,7 @@ class TestImport:
         item2['parentId'] = parentId2
         valid_request_data['items'] = [item1, item2]
         response = test_client.post(
-            url = '/disk/imports',
+            url = '/imports',
             json= valid_request_data
             )
         assert response.status_code == expectation_code
@@ -49,14 +49,14 @@ class TestDelete:
     )
     def test_delete_endpoint(self, test_client : TestClient, id, expectation_code):
         response = test_client.delete(
-            url = f'/disk/delete/{id}',
-            params = {'date' : datetime(2024,1,1,1,1,1,1)}
+            url = f'/delete/{id}',
+            params = {'date' : datetime(2024,1,1,1,1,1,1, tzinfo=timezone.utc)}
             )
         assert response.status_code == expectation_code  
 
     def test_delete_invalid_request(self, test_client : TestClient):
         response = test_client.delete(
-            url = f'/disk/delete/{id}',
+            url = f'/delete/{id}',
             params = {'date' : "2024-13-12T12:12:12"}
             )
         assert response.status_code == 400
@@ -80,7 +80,7 @@ class TestNodes:
     )
     def test_retreve_endpoint(self, test_client : TestClient, id, expectation_code, size_id_set):
         response = test_client.get(
-            url = f'/disk/nodes/{id}'
+            url = f'/nodes/{id}'
             )
         assert response.status_code == expectation_code
         json_tree = response.json()
@@ -93,16 +93,16 @@ class TestNodes:
 class TestUpdates:
     @pytest.mark.parametrize(
         "datetime,status,result_ids",[
-            (f'{datetime(2024,1,2,1,1,1)}',200,set(['id4','id6'])),
-            (f'{datetime(2024,1,3,1,1,1)}',200, set(['id6'])),
-            (f'{datetime(2024,1,3,1,1,2)}',200, set()),
-            (f'{datetime(2024,1,1,22,1,1)}',200, set(['id4'])),
+            (f'{datetime(2024,1,2,1,1,1 ,tzinfo=timezone.utc)}',200,set(['id4','id6'])),
+            (f'{datetime(2024,1,3,1,1,1,tzinfo=timezone.utc)}',200, set(['id6'])),
+            (f'{datetime(2024,1,3,1,1,2,tzinfo=timezone.utc)}',200, set()),
+            (f'{datetime(2024,1,1,22,1,1,tzinfo=timezone.utc)}',200, set(['id4'])),
             (f'2022-13-28T21:12:01.000Z',400, set()),
         ]
     )
     def test_update_handler(self, test_client : TestClient, datetime:str ,status, result_ids):
         response = test_client.get(
-            url = f'/disk/updates',
+            url = f'/updates',
             params = {'date' : datetime}
         )
         assert response.status_code == status
@@ -118,18 +118,18 @@ class TestUpdates:
 class TestHistory:
     @pytest.mark.parametrize(
         "id,datetime_start,datetime_end,status,items_length",[
-            ('id4',f'{datetime(2024,1,1,2,1,1)}',f'{datetime(2024,1,1,22,1,2)}',200,2),
-            ('id1',f'{datetime(2024,1,1,1,1,1)}',f'{datetime(2024,1,2,1,1,1)}',200,1),
-            ('id1',f'{datetime(2010,1,1,2,1,1)}',f'{datetime(2024,1,2,1,1,2)}',200,2),
-            ('id1',f'{datetime(2024,1,1,1,1,2)}',f'{datetime(2024,1,2,1,1,1)}',404,0),
-            ('id1',f'{datetime(2025,1,1,22,1,1)}',f'{datetime(2024,1,1,2,1,1)}',400,0),
-            ('id1',f'{datetime(2024,1,1,2,1,1)}',f'2025-13-28T21:12:01.000Z',400,0),
-            ('randid',f'{datetime(2010,1,1,2,1,1)}',f'{datetime(2025,1,1,22,1,1)}',404,0),
+            ('id4',f'{datetime(2024,1,1,2,1,1,tzinfo=timezone.utc)}',f'{datetime(2024,1,1,22,1,2,tzinfo=timezone.utc)}',200,2),
+            ('id1',f'{datetime(2024,1,1,1,1,1,tzinfo=timezone.utc)}',f'{datetime(2024,1,2,1,1,1,tzinfo=timezone.utc)}',200,1),
+            ('id1',f'{datetime(2010,1,1,2,1,1,tzinfo=timezone.utc)}',f'{datetime(2024,1,2,1,1,2,tzinfo=timezone.utc)}',200,2),
+            ('id1',f'{datetime(2024,1,1,1,1,2,tzinfo=timezone.utc)}',f'{datetime(2024,1,2,1,1,1,tzinfo=timezone.utc)}',404,0),
+            ('id1',f'{datetime(2025,1,1,22,1,1,tzinfo=timezone.utc)}',f'{datetime(2024,1,1,2,1,1,tzinfo=timezone.utc)}',400,0),
+            ('id1',f'{datetime(2024,1,1,2,1,1,tzinfo=timezone.utc)}',f'2025-13-28T21:12:01.000Z',400,0),
+            ('randid',f'{datetime(2010,1,1,2,1,1,tzinfo=timezone.utc)}',f'{datetime(2025,1,1,22,1,1,tzinfo=timezone.utc)}',404,0),
         ]
     )
     def test_history_handler(self, test_client : TestClient, id, datetime_start, datetime_end, status, items_length):
         response = test_client.get(
-            url = f'/disk/node/{id}/history',
+            url = f'/node/{id}/history',
             params = {'dateStart' : datetime_start, 'dateEnd' : datetime_end}
         )
         assert response.status_code == status

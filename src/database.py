@@ -22,7 +22,7 @@ from typing import List
 from .disk.schemas import SysItemType
 from datetime import datetime
 
-aengine = create_async_engine("sqlite+aiosqlite:///db_data/tasks.db", echo=True)
+aengine = create_async_engine("sqlite+aiosqlite:///db_data/tasks.db", echo=False)
 new_session = async_sessionmaker(aengine, expire_on_commit=False, autoflush=True)
 
 @event.listens_for(aengine.sync_engine, "connect")
@@ -33,6 +33,25 @@ def enable_sqlite_fks(dbapi_connection, connection_record):
 
 class Model(AsyncAttrs,DeclarativeBase):
     pass
+
+from datetime import datetime
+
+
+# class TZDateTime(TypeDecorator):
+#     impl = DateTime
+#     cache_ok = True
+
+#     def process_bind_param(self, value:datetime, dialect):
+#         if value is not None:
+#             if not value.tzinfo or value.tzinfo.utcoffset(value) is None:
+#                 raise TypeError("tzinfo is required")
+#             value = value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+#         return value
+
+#     def process_result_value(self, value:datetime, dialect):
+#         if value is not None:
+#             value = value.replace(tzinfo=datetime.timezone.utc)
+#         return value
 
 class DiskFolderOrm(Model):
     __tablename__ = "disk_folders_table"
@@ -94,7 +113,7 @@ class DiskHistoryItems(Model):
     date : Mapped[datetime]
 
     __table_args__ = (
-        Index('ix_id', 'id'),
+        # Index('ix_id', 'id','date'),
         #PrimaryKeyConstraint('id', 'date', name="history_items_pk"),
     )
 

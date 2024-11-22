@@ -21,7 +21,7 @@ middlewares = [
     Middleware(CORSMiddleware, allow_origins = ['*'], allow_methods = ['*'])
 ]
 
-app = FastAPI(lifespan=lifespan)#, middleware=middlewares)
+app = FastAPI(lifespan=lifespan, middleware=middlewares)
 app.include_router(disk_router)
 
 @app.exception_handler(RequestValidationError)
@@ -39,4 +39,4 @@ async def disk_element_exception_handler(request: Request, exc: DiskItemExceptio
     return JSONResponse(content=Error(code=exc_code, message=msg).model_dump(),status_code=exc_code)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=80)

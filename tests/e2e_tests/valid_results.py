@@ -1,7 +1,7 @@
 get_node_4string = {
   "id": "string4",
   "url": None,
-  "date": "2024-11-02T05:25:26.896000",
+  "date": "2024-11-02T05:25:26.896000Z",
   "parentId": None,
   "type": "FOLDER",
   "size": 6,
@@ -9,7 +9,7 @@ get_node_4string = {
     {
       "id": "string2",
       "url": None,
-      "date": "2024-11-02T05:25:26.896000",
+      "date": "2024-11-02T05:25:26.896000Z",
       "parentId": "string4",
       "type": "FOLDER",
       "size": 6,
@@ -17,7 +17,7 @@ get_node_4string = {
         {
           "id": "string",
           "url": "string",
-          "date": "2024-11-02T04:25:26.896000",
+          "date": "2024-11-02T04:25:26.896000Z",
           "parentId": "string2",
           "type": "FILE",
           "size": 6,
@@ -31,7 +31,7 @@ get_node_4string = {
 get_node_4string_final = {
   "id": "string4",
   "url": None,
-  "date": "2024-11-02T06:25:26.896000",
+  "date": "2024-11-02T06:25:26.896000Z",
   "parentId": None,
   "type": "FOLDER",
   "size": 16,
@@ -39,7 +39,7 @@ get_node_4string_final = {
     {
       "id": "string2",
       "url": None,
-      "date": "2024-11-02T05:25:26.896000",
+      "date": "2024-11-02T05:25:26.896000Z",
       "parentId": "string4",
       "type": "FOLDER",
       "size": 6,
@@ -47,7 +47,7 @@ get_node_4string_final = {
         {
           "id": "string",
           "url": "string",
-          "date": "2024-11-02T04:25:26.896000",
+          "date": "2024-11-02T04:25:26.896000Z",
           "parentId": "string2",
           "type": "FILE",
           "size": 6,
@@ -58,7 +58,7 @@ get_node_4string_final = {
     {
       "id": "string3",
       "url": None,
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": "string4",
       "type": "FOLDER",
       "size": 0,
@@ -67,7 +67,7 @@ get_node_4string_final = {
     {
       "id": "string5",
       "url": "string1",
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": "string4",
       "type": "FILE",
       "size": 10,
@@ -81,7 +81,7 @@ updates_no_deletes = {
     {
       "id": "string",
       "url": "string",
-      "date": "2024-11-02T04:25:26.896000",
+      "date": "2024-11-02T04:25:26.896000Z",
       "parentId": "string2",
       "type": "FILE",
       "size": 6
@@ -89,7 +89,7 @@ updates_no_deletes = {
     {
       "id": "string1",
       "url": "string1",
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": None,
       "type": "FILE",
       "size": 10
@@ -97,7 +97,7 @@ updates_no_deletes = {
     {
       "id": "string5",
       "url": "string1",
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": "string4",
       "type": "FILE",
       "size": 10
@@ -108,7 +108,7 @@ updates_no_deletes = {
 get_string4_post_deletes = {
   "id": "string4",
   "url": None,
-  "date": "2024-11-02T08:25:26.896000",
+  "date": "2024-11-02T08:25:26.896000Z",
   "parentId": None,
   "type": "FOLDER",
   "size": 0,
@@ -116,7 +116,7 @@ get_string4_post_deletes = {
     {
       "id": "string3",
       "url": None,
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": "string4",
       "type": "FOLDER",
       "size": 0,
@@ -130,7 +130,7 @@ updates_post_deletes = {
     {
       "id": "string1",
       "url": "string1",
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": None,
       "type": "FILE",
       "size": 10
@@ -143,7 +143,7 @@ string4_history = {
     {
       "id": "string4",
       "url": None,
-      "date": "2024-11-02T05:25:26.896000",
+      "date": "2024-11-02T05:25:26.896000Z",
       "parentId": None,
       "type": "FOLDER",
       "size": 6
@@ -151,7 +151,7 @@ string4_history = {
     {
       "id": "string4",
       "url": None,
-      "date": "2024-11-02T06:25:26.896000",
+      "date": "2024-11-02T06:25:26.896000Z",
       "parentId": None,
       "type": "FOLDER",
       "size": 16
@@ -159,7 +159,7 @@ string4_history = {
     {
       "id": "string4",
       "url": None,
-      "date": "2024-11-02T07:25:26.896000",
+      "date": "2024-11-02T07:25:26.896000Z",
       "parentId": None,
       "type": "FOLDER",
       "size": 10
@@ -167,7 +167,7 @@ string4_history = {
     {
       "id": "string4",
       "url": None,
-      "date": "2024-11-02T08:25:26.896000",
+      "date": "2024-11-02T08:25:26.896000Z",
       "parentId": None,
       "type": "FOLDER",
       "size": 0

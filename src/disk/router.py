@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio  import AsyncSession
 from typing import Annotated, AsyncIterator
 from datetime import datetime
 from .exceptions import DiskItemException
-from .schemas import DiskItemsDTO,DiskItemRetreweSchema, HistoryResponse
+from .schemas import DiskItemsDTO,DiskItemRetreweSchema, HistoryResponse, ConvertedTimedate
 from .exceptions import Error
 from .service import DiskItemService
 from src.database import new_session
@@ -44,7 +44,7 @@ async def get_session() -> AsyncIterator[AsyncSession]:
         yield session
 
 router = APIRouter(
-    prefix = "/disk",
+    prefix = "",
     tags=['Диск',],
     responses= {422 : router_responses[422]}
 )
@@ -70,7 +70,7 @@ async def insert_diskitems(session : Annotated[AsyncSession, Depends(get_session
     status_code=status.HTTP_200_OK,
     responses = {400 : router_responses[400], 404: router_responses[404]},
 )
-async def delete_diskitem(session : Annotated[AsyncSession, Depends(get_session)], id : str, date : datetime) -> Response:
+async def delete_diskitem(session : Annotated[AsyncSession, Depends(get_session)], id : str, date : ConvertedTimedate) -> Response:
     await DiskItemService.delete_item(id, date, session)
     await session.commit()
     return Response(status_code=200)
@@ -92,7 +92,7 @@ async def get_diskitem(session : Annotated[AsyncSession, Depends(get_session)], 
     description="Getting files that have been updated in the last 24 hours inclusive [date - 24h, date]",
     responses = {400 : router_responses[400]},
 )
-async def get_updates(session : Annotated[AsyncSession, Depends(get_session)], date : Annotated[datetime, Query()]) -> HistoryResponse:
+async def get_updates(session : Annotated[AsyncSession, Depends(get_session)], date : Annotated[ConvertedTimedate, Query()]) -> HistoryResponse:
     updates = await DiskItemService.get_update_24h(date, session)
     await session.commit()
     return updates
@@ -104,7 +104,7 @@ async def get_updates(session : Annotated[AsyncSession, Depends(get_session)], d
     responses = {400 : router_responses[400], 404: router_responses[404]},
 )
 async def get_history(session : Annotated[AsyncSession, Depends(get_session)], id : str, dateStart : datetime, dateEnd : datetime) -> HistoryResponse:
-    if dateStart >= dateEnd:
+    if dateStart > dateEnd:
         raise DiskItemException(status_code=400)
     history = await DiskItemService.get_history(id, dateStart, dateEnd, session)
     await session.commit()

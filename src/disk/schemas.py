@@ -5,22 +5,35 @@ from pydantic import (
     Field, 
     model_validator,
     AfterValidator,
+    AwareDatetime,
 )
 from typing import Annotated, Optional, Self
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 class SysItemType(str, Enum):
     FILE = "FILE"
     FOLDER = "FOLDER"
 
+def label_with_utc(value : datetime) -> datetime:
+    value = value.replace(tzinfo=timezone.utc)
+    return value
+
+def convert_to_utc(value : AwareDatetime) -> AwareDatetime:
+    if not value.tzinfo or value.tzinfo.utcoffset(value) is None:
+        raise TypeError("tzinfo is required")
+    value = value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+AddUTCTimedateType = Annotated[datetime, AfterValidator(label_with_utc)]
+ConvertedTimedate = Annotated[AwareDatetime, AfterValidator(convert_to_utc)]
 
 class DiskItemImportSchema(BaseModel):
     id : str
-    url : Annotated[Optional[str], Field(min_length=0, max_length=255, default=None)]
-    parentId : Optional[str]
-    item_type : Annotated[SysItemType, Field(alias='type')]
-    size : Annotated[Optional[int], Field(ge=0, default=0)]
+    url : Annotated[Optional[str], Field(min_length=0, max_length=255, default=None, examples=['ulr1/inner'])]
+    parentId : Annotated[Optional[str], Field(examples=[None], default=None)]
+    item_type : Annotated[SysItemType, Field(alias='type', examples=[SysItemType.FILE.value])]
+    size : Annotated[Optional[int], Field(ge=0, default=None, examples=[10])]
 
     @model_validator(mode='after')
     def foldertype_validator(self) -> Self:
@@ -48,14 +61,12 @@ class DiskItemRetreweSchema(BaseModel):
 
     id : str
     url : Optional[str]
-    date : datetime
+    date : AddUTCTimedateType
     parentId : Optional[str]
     item_type : Annotated[SysItemType,  Field(alias='type')]
     size : Optional[int]
     children : Annotated[
         Optional[list['DiskItemRetreweSchema']], AfterValidator(set_children_to_none), Field(examples=[None])]
-
-
 
 
 def validate_nonrepeat_id(value: list[DiskItemImportSchema], info : ValidationInfo) -> list[DiskItemImportSchema]:
@@ -73,16 +84,18 @@ def validate_parent_folder(value: list[DiskItemImportSchema], info : ValidationI
             raise AssertionError(f"Parent of item with id {item.id} cannot be type ""FILE""")
     return value
 
+
 class DiskItemsDTO(BaseModel):
     items : Annotated[list[DiskItemImportSchema], AfterValidator(validate_nonrepeat_id), AfterValidator(validate_parent_folder)]
-    updateDate : datetime
+    updateDate : ConvertedTimedate
+
 
 class DiskItemHistorySchema(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     id : str
     url : Optional[str]
-    date : datetime
+    date : AddUTCTimedateType
     parentId : Optional[str]
     item_type : Annotated[SysItemType,  Field(alias='type')]
     size : Optional[int]

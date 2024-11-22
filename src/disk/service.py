@@ -11,18 +11,18 @@ from src.disk.exceptions import DiskItemException
 class DiskItemService:
     @classmethod
     async def persist_diskitems(cls, diskitems : list[DiskItemImportSchema], date: datetime, session : AsyncSession) -> None:
-        db_items : list[DiskFolderOrm] = await DiskItemService._validate_type(diskitems, session)
-        new_db_parents : list[DiskFolderOrm] = await DiskItemService._validate_parent_type(diskitems, session)
-        update_data , insert_data = DiskItemService._split_update_insert(diskitems, db_items, date)
-        DiskItemService._build_orm_relations(insert_data, session)
+        db_items : list[DiskFolderOrm] = await cls._validate_type(diskitems, session)
+        new_db_parents : list[DiskFolderOrm] = await cls._validate_parent_type(diskitems, session)
+        update_data , insert_data = cls._split_update_insert(diskitems, db_items, date)
+        cls._build_orm_relations(insert_data, session)
         await session.flush()
         all_parents_ids = {item.parentId for item in db_items}.union({item.id for item in new_db_parents})
         all_ancestors_for_idmap = await DiskFolderOrm.load_ancestors(all_parents_ids, session)
-        await DiskItemService._apply_update(db_items, update_data, session, date)
+        await cls._apply_update(db_items, update_data, session, date)
         for new_orm_item in insert_data.values():
             if new_orm_item.item_type != SysItemType.FOLDER and new_orm_item.parentId != None:
                 new_orm_item.parent.update_loaded_parents_size(new_orm_item.size, new_orm_item.date)
-        DiskItemService._add_all_diskitem_to_history(session)
+        cls._add_all_diskitem_to_history(session)
 
     @classmethod
     def _add_all_diskitem_to_history(cls, session: AsyncSession) -> None: 
@@ -44,7 +44,7 @@ class DiskItemService:
                 assert new_item_data.size == 0
                 new_item_data.size = db_old_item.size
             if db_old_item.parentId != new_item_data.parentId:
-                await DiskItemService._handle_different_parents_update(db_old_item, session, db_old_item.parentId, db_old_item.size, new_item_data.parentId, new_item_data.size)
+                await cls._handle_different_parents_update(db_old_item, session, db_old_item.parentId, db_old_item.size, new_item_data.parentId, new_item_data.size)
             elif db_old_item.parentId != None:
                 db_old_item.parent.update_loaded_parents_size(new_item_data.size - db_old_item.size, db_old_item.date)
             db_old_item.update(**new_item_data.model_dump())
@@ -81,6 +81,7 @@ class DiskItemService:
                 update_data[item.id] = item
             else:
                 insert_data[item.id] = DiskFolderOrm(**item.model_dump(), date=date)
+                print(insert_data[item.id].date)
         return update_data , insert_data
 
     @classmethod
@@ -125,7 +126,7 @@ class DiskItemService:
         await session.delete(delete_item) # existing trigger deletes all history rows affected after ON CASCADE delete
         delete_history_q = delete(DiskHistoryItems).where(DiskHistoryItems.id == id)
         await session.execute(delete_history_q)
-        DiskItemService._add_all_diskitem_to_history(session)
+        cls._add_all_diskitem_to_history(session)
         return 
     
     @classmethod
@@ -160,8 +161,12 @@ class DiskItemService:
     async def get_history(cls, id : str, dateStart : datetime, dateEnd : datetime, session: AsyncSession) -> HistoryResponse:
         history_udates_q = select(DiskHistoryItems).where(DiskHistoryItems.id == id)\
             .where(DiskHistoryItems.date.__ge__(dateStart)).where(DiskHistoryItems.date.__lt__(dateEnd))
+        print(id, dateStart, dateEnd)
+        print(history_udates_q.compile(compile_kwargs={"literal_binds": True}))
         results = await session.execute(history_udates_q)
+        print(results)
         data_orm = results.scalars().all()
+        print(data_orm)
         if len(data_orm) == 0:
             raise DiskItemException(status_code=404, info = "No item")
         response = HistoryResponse.model_validate({"items" : data_orm})

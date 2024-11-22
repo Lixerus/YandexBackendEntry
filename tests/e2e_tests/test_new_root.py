@@ -134,18 +134,18 @@ class TestEdgeCases:
     '''
     def test_insert_new_root(self, test_client: TestClient, first_insert_json, second_insert_json):
         response = test_client.post(
-            url='/disk/imports',
+            url='/imports',
             content = first_insert_json,
         )
         assert response.status_code == 200
         response = test_client.post(
-            url='/disk/imports',
+            url='/imports',
             content = second_insert_json,
         )
         assert response.status_code == 200
         
         response = test_client.get(
-            url = f'/disk/nodes/string4',
+            url = f'/nodes/string4',
         )
         assert response.status_code == 200
         data = response.json()
@@ -153,18 +153,18 @@ class TestEdgeCases:
 
     def test_update_and_folder_switch(self, test_client: TestClient, third_insert_json):
         response = test_client.post(
-            url='/disk/imports',
+            url='/imports',
             content = third_insert_json,
         )
         assert response.status_code == 200
         response = test_client.get(
-            url = f'/disk/nodes/string4',
+            url = f'/nodes/string4',
         )
         assert response.status_code == 200
         data = response.json()
         assert deep_compare(data, get_node_4string_final)
         response = test_client.get(
-            url = '/disk/updates',
+            url = '/updates',
             params={'date' : "2024-11-02T06:25:26.896Z"}
         )
         assert response.status_code == 200
@@ -176,23 +176,23 @@ class TestEdgeCases:
 
     def test_file_and_folder_deletion(self, test_client: TestClient):
         response = test_client.delete(
-            url = '/disk/delete/string2',
+            url = '/delete/string2',
             params={'date' : "2024-11-02T07:25:26.896Z"}
         )
         assert response.status_code == 200
         response = test_client.delete(
-            url = '/disk/delete/string5',
+            url = '/delete/string5',
             params={'date' : "2024-11-02T08:25:26.896Z"}
         )
         assert response.status_code == 200
         response = test_client.get(
-            url = f'/disk/nodes/string4',
+            url = f'/nodes/string4',
         )
         assert response.status_code == 200
         data = response.json()
         assert deep_compare(data, get_string4_post_deletes)
         response = test_client.get(
-            url = '/disk/updates',
+            url = '/updates',
             params={'date' : "2024-11-02T08:25:26.896Z"}
         )
         assert response.status_code == 200
@@ -204,7 +204,7 @@ class TestEdgeCases:
 
     def test_history_after_deletion_updates_inserts(self, test_client: TestClient):
         response = test_client.get(
-            url = '/disk/node/string4/history',
+            url = '/node/string4/history',
             params={'dateStart': "2024-11-02T01:25:26.896Z", 'dateEnd' : "2024-11-02T09:25:26.896Z"}
         )
         assert response.status_code == 200
