@@ -6,7 +6,7 @@ class Error(BaseModel):
     message : Annotated[str, Field(examples=["Validation Failed", "Item not found"])]
 
 class DiskItemException(Exception):
-    def __init__(self, status_code : str, e : Exception = None, info : str = None):
+    def __init__(self, status_code : int, e : Exception|None = None, info : str | None = None):
         self.status_code = status_code
         self.e = e
         self.info = info

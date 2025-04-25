@@ -10,7 +10,7 @@ This service was created as an entry to the *Yandex Autumn Backend School*. Serv
 *`POST /imports` Imports disk items. Importing existing items updates them.*
 
 **Request Parameters:**
-- Request body: `DiskItemsDTO` (optional)
+- Request body: `DiskItemsDTO`
   - `items`: List of items to import/update
   - `updateDate`: Update date (guaranteed to increase monotonically)
 

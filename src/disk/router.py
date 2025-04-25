@@ -58,7 +58,7 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     responses = {400 : router_responses[400]},
 )
-async def insert_diskitems(session : Annotated[AsyncSession, Depends(get_session)], items : DiskItemsDTO | None = None) -> Response:
+async def insert_diskitems(session : Annotated[AsyncSession, Depends(get_session)], items : DiskItemsDTO) -> Response:
     if items != None:
         await DiskItemService.persist_diskitems(items.items, date=items.updateDate, session=session)
     await session.commit()
