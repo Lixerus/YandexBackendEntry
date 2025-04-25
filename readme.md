@@ -2,96 +2,66 @@
 
 This service was created as an entry to the *Yandex Autumn Backend School*. Service works with files and folders object abstractions. Functional requirements and swagger files are in the requirements folder. While programming the service, a lot of experience was gained with async **sqlalchemy** sessions, **fastapi** framework, and **pytest** library. The service contains APIs and docs for new users, as well as written tests for QA.
 
-## Basic Overview
-Service inserts and updates self-referential tree structured data. It can also delete and retrieve saved items. All changes to the items should somehow propagate to the parents and change their properties, such as size and last update time. The tricky part is to somehow manage the updates without too much overhead. Also, all except deleted old data should be kept for history.
-
 ## Technologies
 *Python 3.13, fastapi 0.111, aiosqlite, pytest, sqlalchemy, Docker*
 
-## API
-# Disk Items API
 
-API для работы с элементами диска (файлами и папками) с возможностью импорта, удаления, получения информации и истории изменений.
+## Disk Items API
+*`POST /imports` Imports disk items. Importing existing items updates them.*
 
-## Общие ответы
+**Request Parameters:**
+- Request body: `DiskItemsDTO` (optional)
+  - `items`: List of items to import/update
+  - `updateDate`: Update date (guaranteed to increase monotonically)
 
-- `400 Bad Request` - Неверная схема документа или неверные входные данные
-- `404 Not Found` - Элементы не найдены
-- `422 Unprocessable Entity` - Возвращает код 400 вместо 422
+**Responses:**
+- `200 OK`: Successful import
+- `400 Bad Request`: Validation error
 
-## Эндпоинты
+*`DELETE /delete/{id}` Deletes an item by ID.*
 
-### Импорт элементов
+**Parameters:**
+- `id`: Item ID (string)
+- `date`: Deletion date (`ConvertedTimedate`)
 
-`POST /imports`
+**Responses:**
+- `200 OK`: Successful deletion
+- `400 Bad Request`: Validation error
+- `404 Not Found`: Item not found
 
-Импортирует элементы диска. Импорт существующих элементов обновляет их.
 
-**Параметры запроса:**
-- Тело запроса: `DiskItemsDTO` (опционально)
-  - `items`: Список элементов для импорта/обновления
-  - `updateDate`: Дата обновления (гарантировано монотонное увеличение)
+*`GET /nodes/{id}` Returns information about an item by ID.*
 
-**Ответы:**
-- `200 OK`: Успешный импорт
-- `400 Bad Request`: Ошибка валидации
+**Parameters:**
+- `id`: Item ID (string)
 
-## Удаление элемента
+**Response:**
+- `200 OK`: Item information in `DiskItemRetreweSchema` format
+- `404 Not Found`: Item not found
 
-`DELETE /delete/{id}`
 
-Удаляет информацию об элементе по ID.
+*`GET /updates` Returns a list of files updated within the last 24 hours inclusive [date - 24h, date].*
 
-**Параметры:**
-- `id`: ID элемента (строка)
-- `date`: Дата удаления (`ConvertedTimedate`)
+**Query Parameters:**
+- `date`: Date and time (`ConvertedTimedate`)
 
-**Ответы:**
-- `200 OK`: Успешное удаление
-- `400 Bad Request`: Ошибка валидации
-- `404 Not Found`: Элемент не найден
+**Response:**
+- `200 OK`: List of updated items in `HistoryResponse` format
+- `400 Bad Request`: Validation error
 
-## Получение информации об элементе
 
-`GET /nodes/{id}`
+*`GET /node/{id}/history` Returns the update history for an item within the specified half-interval [from, to).*
 
-Возвращает информацию об элементе по ID.
+**Query Parameters:**
+- `id`: Item ID (string)
+- `dateStart`: Start date (`datetime`)
+- `dateEnd`: End date (`datetime`)
 
-**Параметры:**
-- `id`: ID элемента (строка)
+**Response:**
+- `200 OK`: Update history in `HistoryResponse` format
+- `400 Bad Request`: Validation error (if dateStart > dateEnd)
+- `404 Not Found`: Item not found
 
-**Ответ:**
-- `200 OK`: Информация об элементе в формате `DiskItemRetreweSchema`
-- `404 Not Found`: Элемент не найден
-
-## Получение обновлений
-
-`GET /updates`
-
-Возвращает список файлов, обновленных за последние 24 часа включительно [date - 24h, date].
-
-**Параметры запроса:**
-- `date`: Дата и время (`ConvertedTimedate`)
-
-**Ответ:**
-- `200 OK`: Список обновленных элементов в формате `HistoryResponse`
-- `400 Bad Request`: Ошибка валидации
-
-## Получение истории изменений элемента
-
-`GET /node/{id}/history`
-
-Возвращает историю изменений элемента за заданный полуинтервал [from, to).
-
-**Параметры запроса:**
-- `id`: ID элемента (строка)
-- `dateStart`: Начальная дата (`datetime`)
-- `dateEnd`: Конечная дата (`datetime`)
-
-**Ответ:**
-- `200 OK`: История изменений в формате `HistoryResponse`
-- `400 Bad Request`: Ошибка валидации (если dateStart > dateEnd)
-- `404 Not Found`: Элемент не найден
 ## Project setup
 1. Clone the repository with the command `git clone https://github.com/Lixerus/YandexBackendEntry.git`
 2. Run 2 following commands in cmd in the root folder:
